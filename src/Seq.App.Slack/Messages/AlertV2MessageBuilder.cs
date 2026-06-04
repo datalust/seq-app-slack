@@ -35,9 +35,25 @@ namespace Seq.App.Slack.Messages
         protected override void AddNecessaryAttachments(SlackMessage message, Event<LogEventData> evt, string color)
         {
             var resultsUrl = EventFormatting.SafeGetProperty(evt, "Source.ResultsUrl");
-            var resultsText = SlackSyntax.Hyperlink(resultsUrl, "Explore detected results in Seq");
-            var results = new SlackMessageAttachment(color, resultsText);
-            message.Attachments.Add(results);
+            var contributingEventsUrl = EventFormatting.SafeGetProperty(evt, "Source.ContributingEventsUrl");
+
+            if (!string.IsNullOrWhiteSpace(contributingEventsUrl))
+            {
+                // 2026.1+
+                var exploreText =
+                    "Explore " +
+                    SlackSyntax.Hyperlink(resultsUrl, "detected results") +
+                    " and " +
+                    SlackSyntax.Hyperlink(contributingEventsUrl, "contributing events") +
+                    " in Seq";
+                message.Attachments.Add(new SlackMessageAttachment(color, exploreText));
+            }
+            else
+            {
+                // 2025.2 and earlier
+                var resultsText = SlackSyntax.Hyperlink(resultsUrl, "Explore detected results in Seq");
+                message.Attachments.Add(new SlackMessageAttachment(color, resultsText));
+            }
 
             if (_messageTemplate != null)
             {
@@ -49,11 +65,12 @@ namespace Seq.App.Slack.Messages
             {
                 foreach (var failure in failures)
                 {
-                    var failed = new SlackMessageAttachment(color, SlackSyntax.Escape(failure?.ToString() ?? ""), "Alert Processing Failed");
+                    var failed = new SlackMessageAttachment(color, SlackSyntax.Escape(failure?.ToString() ?? ""),
+                        "Alert Processing Failed");
                     message.Attachments.Add(failed);
                 }
             }
-            
+
             var notificationProperties = new SlackMessageAttachment(color);
             foreach (var property in evt.Data.Properties)
             {
@@ -61,34 +78,71 @@ namespace Seq.App.Slack.Messages
                 var value = _propertyValueFormatter.ConvertPropertyValueToString(property.Value);
                 notificationProperties.Fields.Add(new SlackMessageAttachmentField(property.Key, value, @short: false));
             }
-                
+
             if (notificationProperties.Fields.Count != 0)
                 message.Attachments.Add(notificationProperties);
 
-            // Contributing events are opted-in per notification, so they're considered minimal (the user can configure
-            // the alert to exclude them if desired).
             if (evt.Data.Properties.TryGetValue("Source", out var r) &&
-                r is IReadOnlyDictionary<string, object> rd &&
-                rd.TryGetValue("ContributingEvents", out var ce) &&
-                ce is IEnumerable<object> contributingEvents &&
-                contributingEvents.Count() > 1)
+                r is IReadOnlyDictionary<string, object> rd)
             {
-                var text = new StringBuilder();
-                foreach (var contributing in contributingEvents.Skip(1).Cast<IEnumerable<object>>())
+                if (rd.TryGetValue("Results", out var rs) &&
+                    rs is IEnumerable<object> results &&
+                    results.Count() > 1 &&
+                    results.First() is IEnumerable<object> labelsRow)
                 {
-                    var columns = contributing.Cast<string>().ToArray();
-                    
-                    // Timestamp as ISO-8601 string
-                    text.Append(SlackSyntax.Code(columns[1]));
-                    text.Append(" ");
-                    
-                    // Message, linking to event
-                    text.Append(SlackSyntax.Hyperlink(EventFormatting.LinkToId(_host, columns[0]), SlackSyntax.Escape(columns[2])));
-                    text.Append("\n");
+                    var labels = labelsRow.ToArray();
+                    if (labels.Length > 1 && labels[0] is "time")
+                    {
+                        var text = new StringBuilder();
+                        foreach (var result in results.Skip(1).Cast<IEnumerable<object>>())
+                        {
+                            var values = result.ToArray();
+
+                            var pre = new StringBuilder();
+                            pre.Append(_propertyValueFormatter.ConvertPropertyValueToString(values[0]));
+                            pre.Append("\n");
+                            for (var i = 1; i < values.Length; ++i)
+                            {
+                                if (i != 1)
+                                    pre.Append("\n");
+                                
+                                var label = labels[i];
+                                var value = _propertyValueFormatter.ConvertPropertyValueToString(values[i]);
+                                pre.AppendFormat("{0}: {1}", label, value);
+                            }
+
+                            text.Append(SlackSyntax.Preformatted(pre.ToString()));
+                            text.Append("\n");
+                        }
+
+                        message.Attachments.Add(new SlackMessageAttachment(color, text.ToString(), "Results"));
+                    }
                 }
-                
-                var events = new SlackMessageAttachment(color, text.ToString(), "Contributing Events");
-                message.Attachments.Add(events);
+
+                // Contributing events are opted-in per notification, so they're considered minimal (the user can configure
+                // the alert to exclude them if desired).
+                if (rd.TryGetValue("ContributingEvents", out var ce) &&
+                    ce is IEnumerable<object> contributingEvents &&
+                    contributingEvents.Count() > 1)
+                {
+                    var text = new StringBuilder();
+                    foreach (var contributing in contributingEvents.Skip(1).Cast<IEnumerable<object>>())
+                    {
+                        var columns = contributing.Cast<string>().ToArray();
+
+                        // Timestamp as ISO-8601 string
+                        text.Append(SlackSyntax.Code(columns[1]));
+                        text.Append(" ");
+
+                        // Message, linking to event
+                        text.Append(SlackSyntax.Hyperlink(EventFormatting.LinkToId(_host, columns[0]),
+                            SlackSyntax.Escape(columns[2])));
+                        text.Append("\n");
+                    }
+
+                    var events = new SlackMessageAttachment(color, text.ToString(), "Contributing Events");
+                    message.Attachments.Add(events);
+                }
             }
         }
     }
