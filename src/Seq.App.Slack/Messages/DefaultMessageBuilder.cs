@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Seq.App.Slack.Api;
+﻿using Seq.App.Slack.Api;
 using Seq.App.Slack.Formatting;
 using Seq.Apps;
 using Seq.Apps.LogEvents;
@@ -12,13 +9,13 @@ namespace Seq.App.Slack.Messages
     {
         private readonly Host _host;
         private readonly PropertyValueFormatter _propertyValueFormatter;
-        private readonly string _messageTemplate;
+        private readonly string? _messageTemplate;
         private readonly HashSet<string> _includedProperties;
         
-        private static readonly IEnumerable<string> SpecialProperties = new[] { "Id", "Host" };
+        private static readonly IEnumerable<string> SpecialProperties = ["Id", "Host"];
 
-        public DefaultMessageBuilder(Host host, Apps.App app, PropertyValueFormatter propertyValueFormatter, string channel,
-            string username, string iconUrl, string messageTemplate, bool excludeOptionalAttachments, IEnumerable<string> includedProperties)
+        public DefaultMessageBuilder(Host host, Apps.App app, PropertyValueFormatter propertyValueFormatter, string? channel,
+            string? username, string? iconUrl, string? messageTemplate, bool excludeOptionalAttachments, IEnumerable<string> includedProperties)
             : base(app, channel, username, iconUrl, excludeOptionalAttachments)
         {
             _host = host ?? throw new ArgumentNullException(nameof(host));
@@ -50,10 +47,9 @@ namespace Seq.App.Slack.Messages
 
             foreach (var key in SpecialProperties)
             {
-                if (evt.Data.Properties == null || !evt.Data.Properties.ContainsKey(key)) continue;
+                if (evt.Data.Properties == null || !evt.Data.Properties.TryGetValue(key, out var property)) continue;
 
-                var property = evt.Data.Properties[key];
-                special.Fields.Add(new SlackMessageAttachmentField(key, property.ToString(), @short: true ));
+                special.Fields.Add(new SlackMessageAttachmentField(key, property?.ToString() ?? "", @short: true ));
             }
 
             if (evt.Data.Exception != null)

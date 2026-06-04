@@ -1,10 +1,6 @@
 ﻿using NSubstitute;
 using Seq.Apps;
 using Seq.Apps.LogEvents;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Seq.App.Slack.Api;
 using Xunit;
 
@@ -12,23 +8,22 @@ namespace Seq.App.Slack.Tests
 {
     public class SlackAppTests
     {
-        private ISlackApi _slackApi;
-        private IAppHost _appHost;
-        private Event<LogEventData> _event;
+        private ISlackApi _slackApi = null!;
+        private IAppHost _appHost = null!;
+        private Event<LogEventData> _event = null!;
 
-        private SlackApp CreateSlackApp(Action<SlackApp> configure = null)
+        private SlackApp CreateSlackApp(string? includedProperties = null)
         {
             _slackApi = Substitute.For<ISlackApi>();
             _appHost = Substitute.For<IAppHost>();
-            _appHost.Host.Returns(new Host("http://listen.example.com", "instance"));
+            _appHost.Host.Returns(new Host("https://listen.example.com", "instance"));
             _appHost.App.Returns(new Apps.App("app-id", "App Title", new Dictionary<string, string>(), "storage-path"));
 
             var slackApp = new SlackApp(_slackApi)
             {
-                WebhookUrl = "http://webhook.example.com"
+                WebhookUrl = "https://webhook.example.com",
+                IncludedProperties = includedProperties
             };
-            
-            configure?.Invoke(slackApp);
             
             slackApp.Attach(_appHost);
 
@@ -50,7 +45,7 @@ namespace Seq.App.Slack.Tests
         [Fact]
         public async Task GivenIncludedPropertiesWithWhitespaceAreSuppliedThenTheyAreRespected()
         {
-            var slackApp = CreateSlackApp(app => app.IncludedProperties = "  Property1 ,   Property2  ");             
+            var slackApp = CreateSlackApp("  Property1 ,   Property2  ");             
 
             await slackApp.OnAsync(_event);
 
@@ -63,7 +58,7 @@ namespace Seq.App.Slack.Tests
         [Fact]
         public async Task GivenIncludedPropertiesAreSuppliedThenTheyAreRespected()
         {
-            var slackApp = CreateSlackApp(app => app.IncludedProperties = "Property1,Property3");
+            var slackApp = CreateSlackApp("Property1,Property3");
 
             await slackApp.OnAsync(_event);
 
@@ -89,7 +84,7 @@ namespace Seq.App.Slack.Tests
         [Fact]
         public async Task GivenIncludedPropertiesContainsPropertiesThatDontExistThenTheyAreIgnored()
         {
-            var slackApp = CreateSlackApp(app => app.IncludedProperties = "Property1,PropertyDoesntExist");
+            var slackApp = CreateSlackApp("Property1,PropertyDoesntExist");
 
             await slackApp.OnAsync(_event);
 

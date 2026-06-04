@@ -20,7 +20,7 @@ namespace Seq.App.Slack.Api
             NullValueHandling = NullValueHandling.Ignore
         };
 
-        public SlackApi(string proxyServer)
+        public SlackApi(string? proxyServer)
         {
             if (!string.IsNullOrWhiteSpace(proxyServer))
             {

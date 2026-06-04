@@ -1,5 +1,4 @@
-﻿using System;
-using Seq.App.Slack.Api;
+﻿using Seq.App.Slack.Api;
 using Seq.App.Slack.Formatting;
 using Seq.Apps;
 using Seq.Apps.LogEvents;
@@ -11,13 +10,13 @@ namespace Seq.App.Slack.Messages
         public const string DefaultIconUrl = "https://datalust.co/images/nuget/seq-apps.png";
 
         private readonly Apps.App _app;
-        private readonly string _channel;
-        private readonly string _username;
-        private readonly string _iconUrl;
+        private readonly string? _channel;
+        private readonly string? _username;
+        private readonly string? _iconUrl;
         private readonly bool _excludeOptionalAttachments;
 
-        protected SlackMessageBuilder(Apps.App app, string channel,
-            string username, string iconUrl, bool excludeOptionalAttachments)
+        protected SlackMessageBuilder(Apps.App app, string? channel,
+            string? username, string? iconUrl, bool excludeOptionalAttachments)
         {
             _app = app ?? throw new ArgumentNullException(nameof(app));
             _channel = channel;

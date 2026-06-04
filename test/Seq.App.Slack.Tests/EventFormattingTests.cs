@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Seq.App.Slack.Formatting;
 using Seq.Apps;
 using Seq.Apps.LogEvents;
@@ -12,7 +10,7 @@ namespace Seq.App.Slack.Tests
         [Fact]
         public void SubstitutePlaceholders_ReplacesValue()
         {
-            var result = ExecuteSubstitutePlaceholders(new Dictionary<string, object>()
+            var result = ExecuteSubstitutePlaceholders(new Dictionary<string, object?>
             {
                 {"noun", "force"},
                 {"name", "Luke"}
@@ -24,7 +22,7 @@ namespace Seq.App.Slack.Tests
         [Fact]
         public void SubstitutePlaceholders_IgnoresCase()
         {
-            var result = ExecuteSubstitutePlaceholders(new Dictionary<string, object>()
+            var result = ExecuteSubstitutePlaceholders(new Dictionary<string, object?>
             {
                 {"Noun", "force"},
                 {"naMe", "Newton"}
@@ -36,7 +34,7 @@ namespace Seq.App.Slack.Tests
         [Fact]
         public void SubstitutePlaceholders_IgnoresMissingProperties()
         {
-            var result = ExecuteSubstitutePlaceholders(new Dictionary<string, object>()
+            var result = ExecuteSubstitutePlaceholders(new Dictionary<string, object?>
             {
                 {"noun", "spoon"}
             });
@@ -47,7 +45,7 @@ namespace Seq.App.Slack.Tests
         [Fact]
         public void SubstitutePlaceholders_AllowsPropertiesThatOnlyDifferByCase()
         {
-            var result = ExecuteSubstitutePlaceholders(new Dictionary<string, object>()
+            var result = ExecuteSubstitutePlaceholders(new Dictionary<string, object?>
             {
                 {"noun", "velcro"},
                 {"Noun", "zipper"}
@@ -74,11 +72,11 @@ namespace Seq.App.Slack.Tests
         {
             var data = new LogEventData
             {
-                Properties = new Dictionary<string, object>
+                Properties = new Dictionary<string, object?>
                 {
                     ["First"] = null,
                     ["Second"] = 20,
-                    ["Third"] = new Dictionary<string, object>
+                    ["Third"] = new Dictionary<string, object?>
                     {
                         ["Fourth"] = "test"
                     }
@@ -91,10 +89,10 @@ namespace Seq.App.Slack.Tests
             Assert.Equal(expected, actual);
         }
 
-        private static string ExecuteSubstitutePlaceholders(IReadOnlyDictionary<string, object> properties)
+        private static string ExecuteSubstitutePlaceholders(IReadOnlyDictionary<string, object?>? properties)
             => EventFormatting.SubstitutePlaceholders(
                 "Use the [noun] [name]",
-                new Event<LogEventData>("", 1, DateTime.Now, new LogEventData() {Properties = properties})
+                new Event<LogEventData>("", 1, DateTime.Now, new LogEventData {Properties = properties})
             );
     }
 }

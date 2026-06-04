@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 using Seq.App.Slack.Api;
 using Seq.App.Slack.Formatting;
 using Seq.Apps;
@@ -14,10 +11,10 @@ namespace Seq.App.Slack.Messages
     {
         private readonly Host _host;
         private readonly PropertyValueFormatter _propertyValueFormatter;
-        private readonly string _messageTemplate;
-        private static readonly HashSet<string> SpecialProperties = new HashSet<string>(new[] { "NamespacedAlertTitle", "Alert", "Source", "SuppressedUntil", "Failures" });
+        private readonly string? _messageTemplate;
+        private static readonly HashSet<string> SpecialProperties = ["NamespacedAlertTitle", "Alert", "Source", "SuppressedUntil", "Failures"];
 
-        public AlertV2MessageBuilder(Host host, Apps.App app, PropertyValueFormatter propertyValueFormatter, string channel, string username, string messageTemplate, string iconUrl, bool excludeOptionalAttachments) 
+        public AlertV2MessageBuilder(Host host, Apps.App app, PropertyValueFormatter propertyValueFormatter, string? channel, string? username, string? messageTemplate, string? iconUrl, bool excludeOptionalAttachments) 
             : base(app, channel, username, iconUrl, excludeOptionalAttachments)
         {
             _host = host;
@@ -61,7 +58,7 @@ namespace Seq.App.Slack.Messages
             }
 
             if (evt.Data.Properties.TryGetValue("Failures", out var f) &&
-                f is IEnumerable<object> failures)
+                f is IEnumerable<object?> failures)
             {
                 foreach (var failure in failures)
                 {
@@ -83,12 +80,12 @@ namespace Seq.App.Slack.Messages
                 message.Attachments.Add(notificationProperties);
 
             if (evt.Data.Properties.TryGetValue("Source", out var r) &&
-                r is IReadOnlyDictionary<string, object> rd)
+                r is IReadOnlyDictionary<string, object?> rd)
             {
                 if (rd.TryGetValue("Results", out var rs) &&
-                    rs is IEnumerable<object> results &&
+                    rs is IEnumerable<object?> results &&
                     results.Count() > 1 &&
-                    results.First() is IEnumerable<object> labelsRow)
+                    results.First() is IEnumerable<object?> labelsRow)
                 {
                     var labels = labelsRow.ToArray();
                     if (labels.Length > 1 && labels[0] is "time")
@@ -100,19 +97,19 @@ namespace Seq.App.Slack.Messages
 
                             var pre = new StringBuilder();
                             pre.Append(_propertyValueFormatter.ConvertPropertyValueToString(values[0]));
-                            pre.Append("\n");
+                            pre.Append('\n');
                             for (var i = 1; i < values.Length; ++i)
                             {
                                 if (i != 1)
-                                    pre.Append("\n");
+                                    pre.Append('\n');
                                 
                                 var label = labels[i];
                                 var value = _propertyValueFormatter.ConvertPropertyValueToString(values[i]);
-                                pre.AppendFormat("{0}: {1}", label, value);
+                                pre.Append($"{label}: {value}");
                             }
 
                             text.Append(SlackSyntax.Preformatted(pre.ToString()));
-                            text.Append("\n");
+                            text.Append('\n');
                         }
 
                         message.Attachments.Add(new SlackMessageAttachment(color, text.ToString(), "Results"));
@@ -122,22 +119,22 @@ namespace Seq.App.Slack.Messages
                 // Contributing events are opted-in per notification, so they're considered minimal (the user can configure
                 // the alert to exclude them if desired).
                 if (rd.TryGetValue("ContributingEvents", out var ce) &&
-                    ce is IEnumerable<object> contributingEvents &&
+                    ce is IEnumerable<object?> contributingEvents &&
                     contributingEvents.Count() > 1)
                 {
                     var text = new StringBuilder();
-                    foreach (var contributing in contributingEvents.Skip(1).Cast<IEnumerable<object>>())
+                    foreach (var contributing in contributingEvents.Skip(1).Cast<IEnumerable<object?>>())
                     {
                         var columns = contributing.Cast<string>().ToArray();
 
                         // Timestamp as ISO-8601 string
                         text.Append(SlackSyntax.Code(columns[1]));
-                        text.Append(" ");
+                        text.Append(' ');
 
                         // Message, linking to event
                         text.Append(SlackSyntax.Hyperlink(EventFormatting.LinkToId(_host, columns[0]),
                             SlackSyntax.Escape(columns[2])));
-                        text.Append("\n");
+                        text.Append('\n');
                     }
 
                     var events = new SlackMessageAttachment(color, text.ToString(), "Contributing Events");

@@ -7,9 +7,9 @@ namespace Seq.App.Slack.Messages
 {
     class AlertV1MessageBuilder : SlackMessageBuilder
     {
-        private readonly string _messageTemplate;
+        private readonly string? _messageTemplate;
 
-        public AlertV1MessageBuilder(Apps.App app, string channel, string username, string messageTemplate, string iconUrl, bool excludeOptionalAttachments) 
+        public AlertV1MessageBuilder(Apps.App app, string? channel, string? username, string? messageTemplate, string? iconUrl, bool excludeOptionalAttachments) 
             : base(app, channel, username, iconUrl, excludeOptionalAttachments)
         {
             _messageTemplate = messageTemplate;

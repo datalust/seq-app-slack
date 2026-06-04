@@ -21,9 +21,9 @@ namespace Seq.App.Slack.Api
         public string IconUrl { get; }
 
         [JsonProperty("channel")]
-        public string Channel { get; }
+        public string? Channel { get; }
 
-        public SlackMessage(string fallback, string text, string username, string iconUrl, string channel)
+        public SlackMessage(string fallback, string text, string username, string iconUrl, string? channel)
         {
             this.Fallback = fallback;
             this.Text = text;

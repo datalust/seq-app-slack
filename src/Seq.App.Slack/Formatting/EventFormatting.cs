@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Seq.Apps;
 using Seq.Apps.LogEvents;
 using Serilog;
@@ -9,7 +7,7 @@ namespace Seq.App.Slack.Formatting
 {
     static class EventFormatting
     {
-        private static readonly Regex PlaceholdersRegex = new Regex(@"(\[(?<key>[^\[\]]+?)(\:(?<format>[^\[\]]+?))?\])", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+        private static readonly Regex PlaceholdersRegex = new(@"(\[(?<key>[^\[\]]+?)(\:(?<format>[^\[\]]+?))?\])", RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
         private static readonly IReadOnlyDictionary<LogEventLevel, string> LevelColorMap = new Dictionary<LogEventLevel, string>
         {
@@ -40,7 +38,7 @@ namespace Seq.App.Slack.Formatting
                 if (path.Count == 0)
                 {
                     if (next == null) return "`null`";
-                    return raw ? next.ToString() : SlackSyntax.Escape(next.ToString());
+                    return raw ? next.ToString() ?? "" : SlackSyntax.Escape(next.ToString() ?? "");
                 }
 
                 root = next as IReadOnlyDictionary<string, object>;
@@ -71,11 +69,11 @@ namespace Seq.App.Slack.Formatting
             {
                 var key = m.Groups["key"].Value.ToLower();
                 var format = m.Groups["format"].Value;
-                return placeholders.ContainsKey(key) ? FormatValue(placeholders[key], format) : m.Value;
+                return placeholders.TryGetValue(key, out var placeholder) ? FormatValue(placeholder, format) : m.Value;
             });
         }
 
-        private static string FormatValue(object value, string format)
+        private static string FormatValue(object? value, string format)
         {
             var rawValue = value?.ToString() ?? SlackSyntax.Code("null");
 
@@ -98,8 +96,7 @@ namespace Seq.App.Slack.Formatting
         private static void AddValueIfKeyDoesNotExist(IDictionary<string, object> placeholders, string key, object value)
         {
             var loweredKey = key.ToLower();
-            if (!placeholders.ContainsKey(loweredKey))
-                placeholders.Add(loweredKey, value);
+            placeholders.TryAdd(loweredKey, value);
         }
 
         public static string LinkToId(Host host, string eventId)

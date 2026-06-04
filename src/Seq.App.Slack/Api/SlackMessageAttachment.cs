@@ -9,10 +9,10 @@ namespace Seq.App.Slack.Api
         public string Color { get; }
 
         [JsonProperty("text")]
-        public string Text { get; }
+        public string? Text { get; }
 
         [JsonProperty("title")]
-        public string Title { get; }
+        public string? Title { get; }
 
         [JsonProperty("fields")]
         public List<SlackMessageAttachmentField> Fields { get; }
@@ -20,7 +20,7 @@ namespace Seq.App.Slack.Api
         [JsonProperty("mrkdwn_in")]
         public List<string> MarkdownIn { get; }
 
-        public SlackMessageAttachment(string color, string text = null, string title = null, bool textIsMarkdown = false)
+        public SlackMessageAttachment(string color, string? text = null, string? title = null, bool textIsMarkdown = false)
         {
             this.Color = color;
             this.Text = text;
