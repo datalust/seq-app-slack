@@ -2,44 +2,43 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Seq.App.Slack.Suppression
+namespace Seq.App.Slack.Suppression;
+
+class EventTypeSuppressions
 {
-    class EventTypeSuppressions
+    private readonly Dictionary<uint, DateTime> _suppressions = new Dictionary<uint, DateTime>();
+    private readonly int _suppressionMinutes;
+
+    public EventTypeSuppressions(int suppressionMinutes)
     {
-        private readonly Dictionary<uint, DateTime> _suppressions = new Dictionary<uint, DateTime>();
-        private readonly int _suppressionMinutes;
+        _suppressionMinutes = suppressionMinutes;
+    }
 
-        public EventTypeSuppressions(int suppressionMinutes)
+    public bool ShouldSuppressAt(uint eventType, DateTime utcNow)
+    {
+        if (_suppressionMinutes == 0)
+            return false;
+
+        if (!_suppressions.TryGetValue(eventType, out var suppressedSince) ||
+            suppressedSince.AddMinutes(_suppressionMinutes) < utcNow)
         {
-            _suppressionMinutes = suppressionMinutes;
-        }
+            // Not suppressed, or suppression expired
 
-        public bool ShouldSuppressAt(uint eventType, DateTime utcNow)
-        {
-            if (_suppressionMinutes == 0)
-                return false;
-
-            if (!_suppressions.TryGetValue(eventType, out var suppressedSince) ||
-                suppressedSince.AddMinutes(_suppressionMinutes) < utcNow)
+            // Clean up old entries
+            var expired = _suppressions.FirstOrDefault(kvp => kvp.Value.AddMinutes(_suppressionMinutes) < utcNow);
+            while (expired.Value != default)
             {
-                // Not suppressed, or suppression expired
-
-                // Clean up old entries
-                var expired = _suppressions.FirstOrDefault(kvp => kvp.Value.AddMinutes(_suppressionMinutes) < utcNow);
-                while (expired.Value != default)
-                {
-                    _suppressions.Remove(expired.Key);
-                    expired = _suppressions.FirstOrDefault(kvp => kvp.Value.AddMinutes(_suppressionMinutes) < utcNow);
-                }
-
-                // Start suppression again
-                suppressedSince = utcNow;
-                _suppressions[eventType] = suppressedSince;
-                return false;
+                _suppressions.Remove(expired.Key);
+                expired = _suppressions.FirstOrDefault(kvp => kvp.Value.AddMinutes(_suppressionMinutes) < utcNow);
             }
 
-            // Suppressed
-            return true;
+            // Start suppression again
+            suppressedSince = utcNow;
+            _suppressions[eventType] = suppressedSince;
+            return false;
         }
+
+        // Suppressed
+        return true;
     }
 }
