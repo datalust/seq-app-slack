@@ -4,7 +4,7 @@ An app for [Seq](https://datalust.co/seq) that forwards messages to [Slack](http
 
 ### Getting started
 
- 1. Install the app into Seq through the Seq UI: _Settings_ > _Apps_ > _Install from Nuget_; the package id is _Seq.App.Slack_
+ 1. Install the app into Seq through the Seq UI: _Settings_ > _Apps_ > _Install from NuGet_; the package id is _Seq.App.Slack_
  2. In Slack, select _Admin_ > _Apps and Workflows_ > _Build_ > _Create new App_ > _From Scratch_
  3. In the app registration, choose _Incoming WebHooks_ (this is the new endpoint, not the legacy one)
  4. Add a new incoming webhook configuration and copy the _Webhook URL_
