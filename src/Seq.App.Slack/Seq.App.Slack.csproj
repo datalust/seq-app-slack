@@ -16,8 +16,8 @@
     </PropertyGroup>
     
     <ItemGroup>
-      <PackageReference Include="newtonsoft.json" Version="13.0.1" />
-      <PackageReference Include="Seq.Apps" Version="5.1.0" />
+      <PackageReference Include="newtonsoft.json" Version="13.0.4" />
+      <PackageReference Include="Seq.Apps" Version="2023.4.0" />
     </ItemGroup>
     
     <ItemGroup>
