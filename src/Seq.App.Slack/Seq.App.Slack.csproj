@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <VersionPrefix>1.0.0</VersionPrefix>
+        <TargetFramework>net8.0</TargetFramework>
+        <VersionPrefix>2.0.0</VersionPrefix>
         <Description>An app for Seq that forwards events and notifications to Slack.</Description>
         <Authors>bytenik</Authors>
         <PackageTags>seq-app</PackageTags>
@@ -16,8 +16,8 @@
     </PropertyGroup>
     
     <ItemGroup>
-      <PackageReference Include="newtonsoft.json" Version="13.0.1" />
-      <PackageReference Include="Seq.Apps" Version="5.1.0" />
+      <PackageReference Include="newtonsoft.json" Version="13.0.4" />
+      <PackageReference Include="Seq.Apps" Version="2023.4.0" />
     </ItemGroup>
     
     <ItemGroup>
