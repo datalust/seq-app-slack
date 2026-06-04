@@ -1,35 +1,34 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Seq.App.Slack.Api
+namespace Seq.App.Slack.Api;
+
+public class SlackMessageAttachment
 {
-    public class SlackMessageAttachment
+    [JsonProperty("color")]
+    public string Color { get; }
+
+    [JsonProperty("text")]
+    public string? Text { get; }
+
+    [JsonProperty("title")]
+    public string? Title { get; }
+
+    [JsonProperty("fields")]
+    public List<SlackMessageAttachmentField> Fields { get; }
+
+    [JsonProperty("mrkdwn_in")]
+    public List<string> MarkdownIn { get; }
+
+    public SlackMessageAttachment(string color, string? text = null, string? title = null, bool textIsMarkdown = false)
     {
-        [JsonProperty("color")]
-        public string Color { get; }
+        this.Color = color;
+        this.Text = text;
+        this.Title = title;
+        this.Fields = new List<SlackMessageAttachmentField>();
+        this.MarkdownIn = new List<string>();
 
-        [JsonProperty("text")]
-        public string? Text { get; }
-
-        [JsonProperty("title")]
-        public string? Title { get; }
-
-        [JsonProperty("fields")]
-        public List<SlackMessageAttachmentField> Fields { get; }
-
-        [JsonProperty("mrkdwn_in")]
-        public List<string> MarkdownIn { get; }
-
-        public SlackMessageAttachment(string color, string? text = null, string? title = null, bool textIsMarkdown = false)
-        {
-            this.Color = color;
-            this.Text = text;
-            this.Title = title;
-            this.Fields = new List<SlackMessageAttachmentField>();
-            this.MarkdownIn = new List<string>();
-
-            if (textIsMarkdown)
-                 this.MarkdownIn.Add("text");
-        }
+        if (textIsMarkdown)
+            this.MarkdownIn.Add("text");
     }
 }

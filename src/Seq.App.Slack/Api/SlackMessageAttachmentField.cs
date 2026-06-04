@@ -1,23 +1,22 @@
 ﻿using Newtonsoft.Json;
 
-namespace Seq.App.Slack.Api
+namespace Seq.App.Slack.Api;
+
+public class SlackMessageAttachmentField
 {
-    public class SlackMessageAttachmentField
+    [JsonProperty("title")]
+    public string Title { get; }
+
+    [JsonProperty("value")]
+    public string Value { get; }
+
+    [JsonProperty("short")]
+    public bool Short { get; }
+
+    public SlackMessageAttachmentField(string title, string value, bool @short)
     {
-        [JsonProperty("title")]
-        public string Title { get; }
-
-        [JsonProperty("value")]
-        public string Value { get; }
-
-        [JsonProperty("short")]
-        public bool Short { get; }
-
-        public SlackMessageAttachmentField(string title, string value, bool @short)
-        {
-            Title = title;
-            Value = value;
-            Short = @short;
-        }
+        Title = title;
+        Value = value;
+        Short = @short;
     }
 }
