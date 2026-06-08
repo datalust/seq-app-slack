@@ -125,16 +125,19 @@ class AlertV2MessageBuilder : SlackMessageBuilder
                 var text = new StringBuilder();
                 foreach (var contributing in contributingEvents.Skip(1).Cast<IEnumerable<object?>>())
                 {
-                    var columns = contributing.Cast<string>().ToArray();
+                    var columns = contributing.ToArray();
 
                     // Timestamp as ISO-8601 string
-                    text.Append(SlackSyntax.Code(columns[1]));
+                    text.Append(SlackSyntax.Code(columns[1] as string ?? ""));
                     text.Append(' ');
 
                     // Message, linking to event
-                    text.Append(SlackSyntax.Hyperlink(EventFormatting.LinkToId(_host, columns[0]),
-                        SlackSyntax.Escape(columns[2])));
+                    text.Append(SlackSyntax.Hyperlink(EventFormatting.LinkToId(_host, columns[0] as string ?? ""),
+                        SlackSyntax.Escape(columns[2] as string ?? "")));
                     text.Append('\n');
+                    
+                    // Group key values currently ignored, they're included in Results. Some additional formatting
+                    // work would be needed if we were to add them here.
                 }
 
                 var events = new SlackMessageAttachment(color, text.ToString(), "Contributing Events");
