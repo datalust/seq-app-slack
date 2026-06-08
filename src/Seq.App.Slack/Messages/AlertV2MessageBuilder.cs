@@ -127,13 +127,17 @@ class AlertV2MessageBuilder : SlackMessageBuilder
                 {
                     var columns = contributing.ToArray();
 
+                    const int contributingEventsIdIndex = 0,
+                        contributingEventsTimestampIndex = 1,
+                        contributingEventsMessageIndex = 2;
+
                     // Timestamp as ISO-8601 string
-                    text.Append(SlackSyntax.Code(columns[1] as string ?? ""));
+                    text.Append(SlackSyntax.Code(columns[contributingEventsTimestampIndex] as string ?? ""));
                     text.Append(' ');
 
                     // Message, linking to event
-                    text.Append(SlackSyntax.Hyperlink(EventFormatting.LinkToId(_host, columns[0] as string ?? ""),
-                        SlackSyntax.Escape(columns[2] as string ?? "")));
+                    text.Append(SlackSyntax.Hyperlink(EventFormatting.LinkToId(_host, columns[contributingEventsIdIndex] as string ?? ""),
+                        SlackSyntax.Escape(columns[contributingEventsMessageIndex] as string ?? "")));
                     text.Append('\n');
                     
                     // Group key values currently ignored, they're included in Results. Some additional formatting
